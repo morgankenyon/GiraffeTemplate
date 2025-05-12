@@ -11,9 +11,6 @@ open Microsoft.Extensions.DependencyInjection
 open Giraffe
 open Microsoft.AspNetCore.Http
 
-// ---------------------------------
-// Models
-// ---------------------------------
 module Models =
     type NewUser =
         {
@@ -31,72 +28,83 @@ module Models =
             Phone: string
         }
 
-// ---------------------------------
-// Views
-// ---------------------------------
+module Data =
+    open Dapper
+    open Models
+    open Npgsql
+    open System.Data
 
-//module Views =
-//    open Giraffe.ViewEngine
+    let connStr = "Host=localhost;Username=postgres;Password=password123;Database=giraffe"
+    let getAllUsers () =
+        //let sql = "SELECT user_id as userId, first_name as firstName, last_name as lastName, phone FROM dbo.users"
+        let sql = "SELECT * FROM dbo.users"
 
-//    let layout (content: XmlNode list) =
-//        html [] [
-//            head [] [
-//                title []  [ encodedText "GiraffeTemplate" ]
-//            ]
-//            body [] content
-//        ]
+        task {
+            use conn = new NpgsqlConnection(connStr) :> IDbConnection
+            conn.Open()
 
-//    let partial () =
-//        h1 [] [ encodedText "GiraffeTemplate" ]
+            let! dbUsers = conn.QueryAsync<User>(sql) //TODO - cancellationToken
 
-//    let index (model : Message) =
-//        [
-//            partial()
-//            p [] [ encodedText model.Text ]
-//        ] |> layout
+            return dbUsers
+        }
 
-// ---------------------------------
-// Web app
-// ---------------------------------
+    let insertUser (newUser: NewUser) =
+        let sql = 
+            """
+            INSERT INTO dbo.users (
+                first_name,
+                last_name,
+                phone
+            ) VALUES (
+                @firstName,
+                @lastName,
+                @phone
+            ) RETURNING user_id;
+            """
+
+        task {
+            use conn = new NpgsqlConnection(connStr)
+            let dbParams = {| firstName = newUser.FirstName; lastName = newUser.LastName; phone = newUser.Phone |}
+            conn.Open()
+
+            let! userId = conn.ExecuteScalarAsync<int>(sql, dbParams) //TODO - cancellationToken
+
+            return userId
+        }
 
 module Handlers =
+    open Data
     open Models
-    let getAllUsersHandler () =
-        let users = [
-            {
-                UserId = 1
-                FirstName = "Tod"
-                LastName = "Bo"
-                Phone = "2342"
+    let getAllUsersHandler : HttpHandler =
+        fun (_ : HttpFunc) (ctx: HttpContext) ->
+            task {
+                let! users = getAllUsers()
+
+                return! ctx.WriteJsonAsync users
             }
-            {
-                UserId = 2
-                FirstName = "Harry"
-                LastName = "Thomas"
-                Phone = "211342"
-            }
-        ]
-        json users
 
     let insertUserHandler : HttpHandler =
-        fun (next : HttpFunc) (ctx: HttpContext) ->
+        fun (_ : HttpFunc) (ctx: HttpContext) ->
             task {
                 //bind json
                 let! newUser = ctx.BindJsonAsync<NewUser>()
+                let! userId = insertUser newUser
 
-                //return! Successful.OK newUser next ctx
-                return! ctx.WriteJsonAsync newUser
+                return! ctx.WriteStringAsync (sprintf "User:d: %d" userId)
             }
 
 
-
 module Api =
+    open Data
+    open DbUp
     open Handlers
+    Dapper.DefaultTypeMap.MatchNamesWithUnderscores <- true
+
     let webApp =
         choose [
             GET >=>
                 choose [
-                    route "/user" >=> getAllUsersHandler()
+                    route "/user" >=> getAllUsersHandler
                 ]
             POST >=>
                 choose [
@@ -147,6 +155,12 @@ module Api =
 
     [<EntryPoint>]
     let main args =
+
+        let upgrader = 
+            DeployChanges.To.PostgresqlDatabase(connStr).WithScriptsFromFileSystem("./Scripts").WithTransaction().LogToConsole().Build()
+
+        let result = upgrader.PerformUpgrade()
+
         let contentRoot = Directory.GetCurrentDirectory()
         //let webRoot     = Path.Combine(contentRoot, "WebRoot")
         Host.CreateDefaultBuilder(args)

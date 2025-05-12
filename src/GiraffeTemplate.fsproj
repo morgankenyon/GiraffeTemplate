@@ -7,10 +7,13 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="dbup-postgresql" Version="6.0.3" />
     <PackageReference Include="Giraffe" Version="6.4.0" />
-    <PackageReference Include="Giraffe.ViewEngine" Version="1.4.*" />
+    <PackageReference Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Scripts\0001_CreateDboSchema.sql" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
