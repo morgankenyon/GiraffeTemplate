@@ -13,7 +13,12 @@
     <PackageReference Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Scripts\0001_CreateDboSchema.sql" />
+    <EmbeddedResource Include="Scripts\0001_CreateDboSchema.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Scripts\0002_CreateUserTable.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
