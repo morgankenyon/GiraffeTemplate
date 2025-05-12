@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GiraffeTemplate", "src\GiraffeTemplate.fsproj", "{F02839A3-C287-45BC-AD5D-7D5A96B5B0AA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F02839A3-C287-45BC-AD5D-7D5A96B5B0AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F02839A3-C287-45BC-AD5D-7D5A96B5B0AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F02839A3-C287-45BC-AD5D-7D5A96B5B0AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F02839A3-C287-45BC-AD5D-7D5A96B5B0AA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
